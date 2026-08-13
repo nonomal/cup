@@ -69,8 +69,15 @@ impl Client {
                         self.ctx.logger.warn(&message);
                         Err(message)
                     }
-                } else if status == 502 {
-                    let message = format!("{} {}: The registry is currently unavailabile (returned status code 502).", method, url);
+                } else if status == 403 {
+                    let message = format!("{} {}: Forbidden! If you've configured authentication for this registry, make sure it is correct. Otherwise there is a chance that the registry is down and a proxy is returning an error.", method, url);
+                    self.ctx.logger.warn(&message);
+                    Err(message)
+                } else if status == 502 || status == 503 {
+                    let message = format!(
+                        "{} {}: The registry is currently unavailabile (returned status code {}).",
+                        method, url, status
+                    );
                     self.ctx.logger.warn(&message);
                     Err(message)
                 } else if status.as_u16() <= 400 {
